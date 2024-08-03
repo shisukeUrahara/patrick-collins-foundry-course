@@ -41,7 +41,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     uint256 private immutable i_interval;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLane;
-    uint64 private immutable i_subscriptionId;
+    uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
 
     // (iii) private
@@ -59,7 +59,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         uint256 _interval,
         address _vrfCoordinator,
         bytes32 _gasLane,
-        uint64 _subscriptionId,
+        uint256 _subscriptionId,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
         i_entranceFees = _entranceFees;
@@ -75,7 +75,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     // function to enter raffle
     function enterRaffle() external payable {
         // less gas efficient
-        require(msg.value >= i_entranceFees, "Not Enough Fees.");
+        // require(msg.value >= i_entranceFees, "Not Enough Fees.");
         // more gas efficient
         if (msg.value < i_entranceFees) {
             revert Raffle__NotEnoughEthSent();
@@ -175,5 +175,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     function getRaffleState() public view returns (RaffleState) {
         return s_raffleState;
+    }
+
+    function getPlayer(uint256 _index) public view returns (address) {
+        return s_players[_index];
     }
 }

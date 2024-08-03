@@ -4,15 +4,16 @@ pragma solidity ^0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-
+import {LinkToken} from "../test/mocks/LinkToken.sol";
 contract HelperConfig is Script {
     struct NetworkConfig {
         uint256 entranceFees;
         uint256 interval;
         address vrfCoordinator;
         bytes32 gasLane;
-        uint64 subscriptionId;
+        uint256 subscriptionId;
         uint32 callbackGasLimit;
+        address linkTokenAddress;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -36,7 +37,8 @@ contract HelperConfig is Script {
             vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             subscriptionId: 0,
-            callbackGasLimit: 500000
+            callbackGasLimit: 500000,
+            linkTokenAddress: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
     }
 
@@ -62,6 +64,9 @@ contract HelperConfig is Script {
 
         vm.stopBroadcast();
 
+        // deploying mock link token for anvil environment
+        LinkToken linkToken = new LinkToken();
+
         return
             NetworkConfig({
                 entranceFees: 0.01 ether,
@@ -69,7 +74,8 @@ contract HelperConfig is Script {
                 vrfCoordinator: address(vrfCoordinatorV2_5Mock),
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 subscriptionId: 0, // our script will add this
-                callbackGasLimit: 500000
+                callbackGasLimit: 500000,
+                linkTokenAddress: address(linkToken)
             });
     }
 }
