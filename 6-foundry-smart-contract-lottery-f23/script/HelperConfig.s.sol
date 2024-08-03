@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.20;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract HelperConfig is Script {
@@ -62,13 +62,14 @@ contract HelperConfig is Script {
 
         vm.stopBroadcast();
 
-        NetworkConfig({
-            entranceFees: 0.01 ether,
-            interval: 30,
-            vrfCoordinator: address(vrfCoordinatorV2_5Mock),
-            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-            subscriptionId: 0, // our script will add this
-            callbackGasLimit: 500000
-        });
+        return
+            NetworkConfig({
+                entranceFees: 0.01 ether,
+                interval: 30,
+                vrfCoordinator: address(vrfCoordinatorV2_5Mock),
+                gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
+                subscriptionId: 0, // our script will add this
+                callbackGasLimit: 500000
+            });
     }
 }
