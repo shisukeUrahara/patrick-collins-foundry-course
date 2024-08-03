@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+
 // import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 // import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
@@ -12,11 +14,16 @@ import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/inter
  *@notice This contract is for creating a sample raffle
  *@dev Implements Chainlink VRFV2
  */
-contract Raffle is VRFConsumerBaseV2Plus {
+contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     // custom errors
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferEthFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__UpkeepNotNeeded(
+        uint256 currentBalance,
+        uint256 numPlayers,
+        uint256 raffleState
+    );
 
     // type declarations
     enum RaffleState {
@@ -81,14 +88,44 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit RaffleEntered(msg.sender);
     }
 
+    /**
+     * when is the winner supposed to be picked
+     * @dev This is the function that the chainlink automation calls to check if its time to perform an upkeep
+     * the following should be true for this to return true
+     * 1. the raffle is in OPEN State
+     * 2. its been at least the interval since the last winner was picked
+     * 3. the contract has ETH (aka , players)
+     * 4. (Implicit) The contract is funded with ETH
+     */
+    function checkUpkeep(
+        bytes memory /* checkData */
+    )
+        public
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory /* performData */)
+    {
+        bool timeHasPassed = (block.timestamp - s_lastTimestamp) >= i_interval;
+        bool isOpen = s_raffleState == RaffleState.OPEN;
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+        upkeepNeeded = timeHasPassed && isOpen && hasPlayers && hasBalance;
+        return (upkeepNeeded, "0x0");
+    }
+
     // a function to pick the winner
     // (i) get a random number
     // (ii) use the random number to pick the winner
     // (iii) do all this automatical
-    function pickWinner() external {
-        // check that enough time has passed for the raffle
-        if (block.timestamp - s_lastTimestamp < i_interval) {
-            revert();
+    function performUpkeep(bytes calldata /* performData */) external override {
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        // require(upkeepNeeded, "Upkeep not needed");
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                uint256(s_raffleState)
+            );
         }
         // set raffle state to calculating
         s_raffleState = RaffleState.CALCULATING;
