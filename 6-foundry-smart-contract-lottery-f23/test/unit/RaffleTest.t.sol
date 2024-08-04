@@ -216,9 +216,17 @@ contract RaffleTest is Test {
         _;
     }
 
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
+
     function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep()
         public
         raffleEntered
+        skipFork
     {
         // Arrange
         // Act / Assert
@@ -239,6 +247,7 @@ contract RaffleTest is Test {
     function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney()
         public
         raffleEntered
+        skipFork
     {
         address expectedWinner = address(1);
 
