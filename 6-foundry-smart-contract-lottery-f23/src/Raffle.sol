@@ -2,13 +2,11 @@
 pragma solidity ^0.8.20;
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+// import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 
-// import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
-// import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
-/** lib\chainlink\contracts\src\v0.8\vrf\interfaces\VRFCoordinatorV2Interface.sol
+/**
  *@title A raffle contract
  * @author ShisukeUrahara
  *@notice This contract is for creating a sample raffle
@@ -39,7 +37,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     // (ii) immutables
     uint256 private immutable i_entranceFees;
     uint256 private immutable i_interval;
-    VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
+    IVRFCoordinatorV2Plus private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLane;
     uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
@@ -66,7 +64,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         i_entranceFees = _entranceFees;
         i_interval = _interval;
         s_lastTimestamp = block.timestamp;
-        i_vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinator);
+        i_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
         i_gasLane = _gasLane;
         i_subscriptionId = _subscriptionId;
         i_callbackGasLimit = _callbackGasLimit; // this is in constructor and not constant since it will vary depending on chain
@@ -182,5 +180,17 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     function getPlayer(uint256 _index) public view returns (address) {
         return s_players[_index];
+    }
+
+    function getLastTimeStamp() public view returns (uint256) {
+        return s_lastTimestamp;
+    }
+
+    function getRecentWinner() public view returns (address) {
+        return s_recentWinner;
+    }
+
+    function getLengthOfPlayers() public view returns (uint256) {
+        return s_players.length;
     }
 }
