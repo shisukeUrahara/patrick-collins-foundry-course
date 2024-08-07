@@ -34,3 +34,6 @@
 [submodule "8-foundry-mood-nft-f23/lib/openzeppelin-contracts"]
 	path = 8-foundry-mood-nft-f23/lib/openzeppelin-contracts
 	url = https://github.com/Openzeppelin/openzeppelin-contracts
+[submodule "8-foundry-mood-nft-f23/lib/foundry-devops"]
+	path = 8-foundry-mood-nft-f23/lib/foundry-devops
+	url = https://github.com/cyfrin/foundry-devops
